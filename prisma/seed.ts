@@ -20,6 +20,20 @@ const VIDEO_TOPICS = [
   "Web Security Best Practices", "Performance Optimization", "Testing Strategies",
 ];
 
+const SAMPLE_VIDEO_URLS = [
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4",
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4",
+];
+
 const ARTICLE_TOPICS = [
   "The Future of Web Development", "Why TypeScript is Worth It", "Building Scalable APIs",
   "Database Indexing Explained", "Clean Code Principles", "Functional Programming in JS",
@@ -126,7 +140,7 @@ async function main() {
         description: faker.lorem.paragraph(2),
         thumbnail: `https://picsum.photos/seed/${slug.slice(0, 10)}/800/450`,
         url: isVideo
-          ? `https://example.com/videos/${faker.string.uuid()}`
+          ? faker.helpers.arrayElement(SAMPLE_VIDEO_URLS)
           : `<h2>${faker.lorem.sentence()}</h2><p>${faker.lorem.paragraphs(10, "</p><p>")}</p>`,
         viewCount: faker.number.int({ min: 0, max: 50000 }),
         likeCount: faker.number.int({ min: 0, max: 5000 }),

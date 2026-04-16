@@ -9,6 +9,22 @@ interface Props {
   initialPosition?: number;
 }
 
+function isYouTubeUrl(url: string) {
+  return url.includes("youtube.com") || url.includes("youtu.be");
+}
+
+function getYouTubeEmbedUrl(url: string) {
+  // Already an embed URL
+  if (url.includes("youtube.com/embed/")) return url;
+  // youtu.be/VIDEO_ID
+  const shortMatch = url.match(/youtu\.be\/([^?&]+)/);
+  if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}`;
+  // youtube.com/watch?v=VIDEO_ID
+  const watchMatch = url.match(/[?&]v=([^?&]+)/);
+  if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}`;
+  return url;
+}
+
 export default function VideoPlayer({ contentId, url, initialPosition = 0 }: Props) {
   const { data: session } = useSession();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -32,7 +48,6 @@ export default function VideoPlayer({ contentId, url, initialPosition = 0 }: Pro
     [contentId, session?.user?.id]
   );
 
-  // Debounced progress sync — only every 5s of playback or on unmount
   const debouncedSync = useCallback(
     (position: number, completed = false) => {
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -42,10 +57,10 @@ export default function VideoPlayer({ contentId, url, initialPosition = 0 }: Pro
   );
 
   useEffect(() => {
+    if (isYouTubeUrl(url)) return; // YouTube handles its own progress
     const video = videoRef.current;
     if (!video) return;
 
-    // Restore previous position
     if (initialPosition > 0) video.currentTime = initialPosition;
 
     const onTimeUpdate = () => debouncedSync(video.currentTime);
@@ -54,18 +69,35 @@ export default function VideoPlayer({ contentId, url, initialPosition = 0 }: Pro
     video.addEventListener("timeupdate", onTimeUpdate);
     video.addEventListener("ended", onEnded);
 
-    // Sync on component unmount (tab close, navigation)
     return () => {
       video.removeEventListener("timeupdate", onTimeUpdate);
       video.removeEventListener("ended", onEnded);
       if (timerRef.current) clearTimeout(timerRef.current);
-      // Final sync on unmount
       if (video.currentTime > 0 && video.currentTime !== lastSyncedRef.current) {
         syncProgress(video.currentTime, video.ended);
       }
     };
-  }, [debouncedSync, syncProgress, initialPosition]);
+  }, [debouncedSync, syncProgress, initialPosition, url]);
 
+  // ── YouTube embed ──────────────────────────────────────────────────────────
+  if (isYouTubeUrl(url)) {
+    const embedUrl = getYouTubeEmbedUrl(url);
+    return (
+      <div className="overflow-hidden rounded-xl bg-black">
+        <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+          <iframe
+            src={`${embedUrl}?rel=0&modestbranding=1`}
+            className="absolute inset-0 h-full w-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            title="Video Player"
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // ── Direct MP4 / other video ───────────────────────────────────────────────
   return (
     <div className="overflow-hidden rounded-xl bg-black">
       <video
