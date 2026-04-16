@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+
+export const dynamic = "force-dynamic";
 import Navbar from "@/components/ui/Navbar";
 import VideoPlayer from "@/components/content/VideoPlayer";
 import ArticleReader from "@/components/content/ArticleReader";
@@ -81,6 +83,7 @@ export default async function ContentPage({ params }: Props) {
         <div className="mb-6">
           {content.type === "VIDEO" ? (
             <VideoPlayer
+              key={content.url}
               contentId={content.id}
               url={content.url}
               initialPosition={progress?.lastPosition ?? 0}
